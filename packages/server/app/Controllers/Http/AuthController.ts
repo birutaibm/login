@@ -7,13 +7,20 @@ export default class AuthController {
     const password = request.input('password')
 
     const token = await auth.use('api').attempt(uid, password)
-    const persisted = await APIToken.create({
+    await APIToken.create({
       expiresAt: token.expiresAt,
       name: token.name,
       token: token.token,
       type: token.type,
       userId: token.user.id,
     });
-    return persisted
+    return {
+      token: token.token,
+      user: {
+        id: token.user.id.toString(),
+        name: token.user.username,
+        email: token.user.email,
+      }
+    }
   }
 }

@@ -1,10 +1,14 @@
 import React from 'react';
-import SignIn from './pages/SignIn';
+import { AuthProvider } from './hooks/auth';
+
+import Routes from './routes';
 
 function App() {
   return (
     <div className="App">
-      <SignIn />
+      <AuthProvider>
+        <Routes />
+      </AuthProvider>
     </div>
   );
 }
