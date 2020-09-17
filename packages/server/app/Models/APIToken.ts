@@ -1,7 +1,6 @@
 import { DateTime } from 'luxon'
 import {
   column,
-  beforeSave,
   BaseModel,
   belongsTo,
   BelongsTo,
@@ -32,11 +31,4 @@ export default class APIToken extends BaseModel {
 
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   public expiresAt: DateTime
-
-  @beforeSave()
-  public static async calcExpires (token: APIToken) {
-    const date = new Date()
-    date.setHours(date.getHours() + 2);
-    token.expiresAt = DateTime.fromJSDate(date);
-  }
 }

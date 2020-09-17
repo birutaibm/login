@@ -1,6 +1,7 @@
-import React, { createContext, useCallback, useState, useContext, useMemo } from 'react';
+import React, { createContext, useCallback, useState, useContext } from 'react';
 
 import api from '../services/api';
+import { useStorage } from './storage';
 
 interface User {
   id: string;
@@ -21,7 +22,6 @@ interface SignInInputDTO {
 type SignInOutputDTO = Promise<void>;
 
 interface AuthContext {
-  user?: User;
   signIn(input: SignInInputDTO): SignInOutputDTO;
   signOut(): void;
   updateUser(user: User): void;
@@ -40,53 +40,47 @@ export function useAuth(): AuthContext {
 }
 
 export const AuthProvider: React.FC = ({children}) => {
+  const storage = useStorage();
   const [data, setData] = useState<AuthState | null>(() => {
-    const token = localStorage.getItem('token');
-    const user = localStorage.getItem('user');
+    const data = storage.readData();
 
-    if (token && user) {
-      api.defaults.headers.authorization = `Bearer ${token}`;
-      return {token, user: JSON.parse(user)};
-    } else {
-      return null;
+    if (data) {
+      api.defaults.headers.authorization = `Bearer ${data.token}`;
     }
+
+    return data || null;
   });
 
   const signIn = useCallback(async ({uid, password}) => {
     const {data} = await api.post('login', {uid, password});
 
-    const {token, user} = data;
-    localStorage.setItem('token', token);
-    localStorage.setItem('user', JSON.stringify(user));
+    storage.writeData(data);
 
-    api.defaults.headers.authorization = `Bearer ${token}`;
+    api.defaults.headers.authorization = `Bearer ${data.token}`;
 
-    setData({token, user});
-  }, []);
+    setData(data);
+  }, [storage]);
 
   const signOut = useCallback(() => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    api.delete('login');
+
+    storage.clearData();
 
     setData(null);
-  }, []);
+  }, [storage]);
 
   const updateUser = useCallback((user: User) => {
     const token = data?.token || '';
-    localStorage.setItem('user', JSON.stringify(user));
+
+    storage.writeData({ token, user });
     setData({
       token,
       user,
     });
-  }, [setData, data]);
-
-  const value = useMemo(() =>
-    Object.assign({ signIn, signOut, updateUser }, data ? { user: data.user }: {}),
-    [data, signIn, signOut, updateUser]
-  );
+  }, [setData, data, storage]);
 
   return (
-    <Context.Provider value={value}>
+    <Context.Provider value={{ signIn, signOut, updateUser }}>
       {children}
     </Context.Provider>
   );
