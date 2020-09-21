@@ -1,6 +1,8 @@
 import React, { FormEvent, useCallback, useMemo, useRef } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
+
 import { useAuth } from '../../hooks/auth';
+import api from '../../services/api';
 
 import { Container } from './styles';
 
@@ -41,6 +43,15 @@ const SignIn: React.FC = () => {
     }
   }, [signIn, next]);
 
+  const handleResetPassword = useCallback(async () => {
+    if (uid.current) {
+      const user = uid.current.value;
+      uid.current.value = '';
+      await api.post('/password_recover', { uid: user });
+      next();
+    }
+  }, [next]);
+
   return (
     <Container>
       <h1>Sign in page</h1>
@@ -61,6 +72,7 @@ const SignIn: React.FC = () => {
         />
         <button type="submit">Login</button>
       </form>
+      <button onClick={handleResetPassword}>Reset password</button>
     </Container>
   );
 }

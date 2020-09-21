@@ -4,7 +4,6 @@ import { useStorage } from '../hooks/storage';
 
 const PrivateRoute: React.FC<RouteProps> = ({ ...routeProps }) => {
   const { user } = useStorage();
-  console.log(user);
   const authorized = useMemo(() => <Route {...routeProps} />, [routeProps]);
   const unauthorized = useMemo(() => (
     <div>

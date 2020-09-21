@@ -1,4 +1,4 @@
-import React, { createContext, useCallback, useState, useContext } from 'react';
+import React, { createContext, useCallback, useState, useContext, useEffect } from 'react';
 
 import api from '../services/api';
 import { useStorage } from './storage';
@@ -41,15 +41,20 @@ export function useAuth(): AuthContext {
 
 export const AuthProvider: React.FC = ({children}) => {
   const storage = useStorage();
-  const [data, setData] = useState<AuthState | null>(() => {
-    const data = storage.readData();
+  const [data, setData] = useState<AuthState | null>(null);
 
+  useEffect(() => {
+    const data = storage.readData();
     if (data) {
+      setData(data);
       api.defaults.headers.authorization = `Bearer ${data.token}`;
     }
-
-    return data || null;
-  });
+    api.interceptors.response.use(response => response, error => {
+      if (401 === error.response.status) {
+        storage.clearData();
+      }
+    });
+  }, [storage]);
 
   const signIn = useCallback(async ({uid, password}) => {
     const {data} = await api.post('login', {uid, password});

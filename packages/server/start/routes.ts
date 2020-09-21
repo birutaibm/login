@@ -31,9 +31,14 @@ Route.post('/login', 'AuthController.login')
 Route.delete('/login', 'AuthController.logout')
 
 Route.get('/dashboard', async ({auth}) => {
-  if (auth.user) return {
-    username: auth.user.username,
-    role: auth.user.role,
-  };
-  return { }
+  if (auth.user) {
+    return {
+      username: auth.user.username,
+      role: auth.user.role,
+    }
+  }
+  return {}
 }).middleware('auth:api')
+
+Route.post('/password_recover', 'PasswordRecoverController.create')
+Route.put('/password_recover', 'PasswordRecoverController.update')

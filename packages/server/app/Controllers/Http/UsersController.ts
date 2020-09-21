@@ -8,7 +8,6 @@ export default class UsersController {
 
   public async create ({ request, response }: HttpContextContract) {
     const data = request.all()
-    console.log(data)
     const conflictingUser = await User.findBy('email', data.email)
     if (conflictingUser) {
       return response.status(400).json({

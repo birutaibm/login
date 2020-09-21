@@ -2,11 +2,20 @@
   "name": "login",
   "version": "1.0.0",
   "main": "index.js",
-  "private":"true",
+  "private": "true",
   "workspaces": {
     "packages": [
       "packages/*"
     ]
   },
-  "license": "MIT"
+  "scripts": {
+    "ace": "yarn workspace @login/server node ace",
+    "server:start": "yarn workspace @login/server start",
+    "web:start": "yarn workspace @login/web start",
+    "start": "concurrently \"yarn server:start\" \"yarn web:start\""
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^5.3.0"
+  }
 }
